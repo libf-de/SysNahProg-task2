@@ -1,15 +1,17 @@
 #include <iostream>
 #include <dirent.h>
-#include<vector>
 #include<filesystem>
 #include <set>
 #include <fnmatch.h>
 #include <sys/stat.h>
 #include <cstdlib>
+#include <cstring>
 #include "argparse/argparse.hpp"
+#include <unistd.h>
+#include <linux/limits.h>
 
-std::string ensureTrailingSlash(const std::string& path);
-void walkDir(const std::string& dir);
+
+void walkDir(const std::string& dir, const std::string& dirPrefix);
 std::set<std::string> seenPaths;
 argparse::ArgumentParser args("find");
 unsigned char fileType;
@@ -42,15 +44,24 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    std::string dirName = args.get<std::string>("directory_name");
 
-    std::string dirIn = "test";
+    struct stat statOut{};
+    if(stat((dirName).c_str(), &statOut) == 0) {
+        if(
+                (!args.is_used("-name") ||
+                 fnmatch(args.get<std::string>("-name").c_str(), dirName.c_str(), 0) == 0)
+                &&
+                (!args.is_used("-type") ||
+                    ((S_ISREG(statOut.st_mode) && fileType == DT_REG)
+                    || S_ISDIR(statOut.st_mode) && fileType == DT_DIR)))
+            printf("%s\n", dirName.c_str());
+    } else {
+        exit(1);
+    }
 
-    std::string dir = dirIn;
-    //if(!dir.starts_with("/")) dir = std::filesystem::current_path().string() + "/" + dirIn;
 
-    //std::cout << dir << std::endl;
-
-    walkDir(args.get<std::string>("directory_name"));
+    walkDir(dirName, "");
 
     //std::cout << "Hello, World!" << std::endl;
     return 0;
@@ -59,6 +70,9 @@ int main(int argc, char *argv[]) {
 bool shallWalk(const char * dir) {
     char *resolved_name = nullptr;
     char * c_target = realpath(dir, resolved_name);
+    if(c_target == nullptr) return true;
+
+
     std::string fullDir(c_target);
     if(seenPaths.find(fullDir) == seenPaths.end()) {
         seenPaths.insert(fullDir);
@@ -67,7 +81,7 @@ bool shallWalk(const char * dir) {
     return false;
 }
 
-void walkDir(const std::string& dir) {
+void walkDir(const std::string& dir, const std::string& dirPrefix) {
     if(!shallWalk(dir.c_str())) return; //dir was already walked
     //printf("walkDir(%s)", dir.c_str());
 
@@ -78,27 +92,46 @@ void walkDir(const std::string& dir) {
 
         // Durchlaufe das Verzeichnis und liste die Dateien auf
         while ((entry = readdir(directory)) != nullptr) {
-            if(strcmp(entry->d_name, ".") == 0) continue;
-            if(strcmp(entry->d_name, "..") == 0) continue;
+            const char * curObject = entry->d_name;
+            if(strcmp(curObject, ".") == 0) continue;
+            if(strcmp(curObject, "..") == 0) continue;
 
             if( (!args.is_used("-name") ||
-                 fnmatch(args.get<std::string>("-name").c_str(), entry->d_name, 0) == 0)
+                 fnmatch(args.get<std::string>("-name").c_str(), curObject, 0) == 0)
                 &&
                 (!args.is_used("-type") ||
                  entry->d_type == fileType))
-                printf("%s/%s\n", dir.c_str(), entry->d_name);
+                if(dirPrefix.length() > 0) {
+                    if(dirPrefix.ends_with("/")) {
+                        printf("%s%s/%s\n", dirPrefix.c_str(), dir.c_str(), curObject);
+                    } else {
+                        printf("%s/%s/%s\n", dirPrefix.c_str(), dir.c_str(), curObject);
+                    }
+                } else {
+                    printf("%s/%s\n", dir.c_str(), curObject);
+                }
 
             if(entry->d_type == DT_DIR) {
-                walkDir(dir + "/" + entry->d_name);
+                char oldPath[8192];
+                getcwd(oldPath, 8192);
+                chdir(dir.c_str());
+                if(dirPrefix.length() > 0) {
+                    walkDir(curObject, dirPrefix + "/" + dir);
+                } else {
+                    walkDir(curObject, dir);
+                }
+
+                chdir(oldPath);
             } else if(entry->d_type == DT_LNK) {
                 char *resolved_name = nullptr;
-                char * c_target = realpath((dir + "/" + entry->d_name).c_str(), resolved_name);
+                char * c_target = realpath((dir + "/" + curObject).c_str(), resolved_name);
+                if (access(c_target, F_OK) != 0) continue;
                 std::string target(c_target); //TODO: Maybe use readlink() instead?
                 struct stat statOut{};
-                if(stat((dir + "/" + entry->d_name).c_str(), &statOut) != 0 &&
+                if(stat((dir + "/" + curObject).c_str(), &statOut) != 0 &&
                    statOut.st_mode == S_IFDIR &&
                    shallWalk(c_target)) {
-                    walkDir(target);
+                    walkDir(target, dirPrefix);
                 }
             }
         }
