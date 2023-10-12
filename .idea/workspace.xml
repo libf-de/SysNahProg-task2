@@ -17,9 +17,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="92975cfa-bc1f-4646-9768-52d88956b8da" name="Changes" comment="Finished find">
-      <change afterPath="$PROJECT_DIR$/test-all.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/find_testbed/xdev.img" beforeDir="false" afterPath="$PROJECT_DIR$/find_testbed/xdev.img" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test-streams.sh" beforeDir="false" afterPath="$PROJECT_DIR$/test-streams.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.sh" beforeDir="false" afterPath="$PROJECT_DIR$/test.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testgui.sh" beforeDir="false" afterPath="$PROJECT_DIR$/testgui.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,7 +136,7 @@
       <workItem from="1696941835078" duration="10171000" />
       <workItem from="1697022795785" duration="2781000" />
       <workItem from="1697025891438" duration="8088000" />
-      <workItem from="1697117295396" duration="7020000" />
+      <workItem from="1697117295396" duration="7366000" />
     </task>
     <task id="LOCAL-00001" summary="Finished find">
       <option name="closed" value="true" />

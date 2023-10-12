@@ -1,0 +1,8 @@
+Testscripts assume myfind to be in this directory and called "main".
+If that's not the case please rename in "test-env".
+
+Use ./test-all.sh to test myfind vs gnu find
+
+Use ./test.sh <normal find arguments> to see diff between myfind and gnu find
+
+Use ./testgui.sh <normal find arguments> to use meld GUI to diff myfind vs gnu find
