@@ -1,6 +1,6 @@
 BINARY=main
 OBJ=${BINARY}.o
-CXXFLAGS=-std=c++20 -Wall -Wextra -fPIC -lexplain -g
+CXXFLAGS=-std=c++20 -Wall -Wextra -fPIC -g
 
 all: $(BINARY)
 

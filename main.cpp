@@ -1,7 +1,7 @@
 #include<string>
 #include <iostream>
 #include <dirent.h>
-#include<filesystem>
+#include <climits>
 #include <set>
 #include <fnmatch.h>
 #include <sys/stat.h>
@@ -130,6 +130,7 @@ std::string realpathOfSymlink(const std::string& inputPath) {
     return (std::string(fullParentPath) + "/" + symlinkName);
 }
 
+// NOLINTNEXTLINE
 bool isSymlinkInLoop(const std::string& symlinkPathRelative, std::set<std::string>& visitedPaths) {
     auto symlinkPath = realpathOfSymlink(symlinkPathRelative);
 
@@ -231,6 +232,7 @@ void printFinding(struct dirent *entry, const std::string& dir, const std::strin
     }
 }
 
+// NOLINTNEXTLINE
 void walkDirRec(const std::string& dir, const std::string& dirPrefix) {
     if(args.is_used("-xdev")) { //If we don't want to cross devices, check the current dir...
         struct stat statOut{};
@@ -262,7 +264,7 @@ void walkDirRec(const std::string& dir, const std::string& dirPrefix) {
             // (To match GNU find behavior)
             if(args.is_used("-follow") &&
                dirPrefix.ends_with("/") &&
-               (dirPrefix.length() + dir.length() + curObject.length()) > 4096 &&
+               (dirPrefix.length() + dir.length() + curObject.length()) > PATH_MAX &&
                entry->d_type == DT_DIR) {
                 if(isGerman)
                     std::cerr << callPath << ": ‘" << dirPrefix << dir << "/" << curObject << "’: Der Dateiname ist zu lang" << std::endl;
@@ -272,7 +274,7 @@ void walkDirRec(const std::string& dir, const std::string& dirPrefix) {
                 continue;
             } else if(args.is_used("-follow") &&
                       !dirPrefix.ends_with("/") &&
-                      (dirPrefix.length() + dir.length() + curObject.length() + 1) > 4096 &&
+                      (dirPrefix.length() + dir.length() + curObject.length() + 1) > PATH_MAX &&
                       entry->d_type == DT_DIR) {
                 if(isGerman)
                     std::cerr << callPath << ": ‘" << dirPrefix << "/" << dir << "/" << curObject << "’: Der Dateiname ist zu lang" << std::endl;
